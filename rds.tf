@@ -2,7 +2,7 @@
 # RDS MySQL Database Instance
 #--------------------------------------------------
 resource "aws_db_instance" "mysql_db" {
-    identifier = "mysql-db-Project3"
+    identifier = "mysql-db-project3"
   allocated_storage    = 20                      # 20 GB of storage
   storage_type         = "gp2"                   # General Purpose SSD
   instance_class       = var.mysql_config[0]     # DB instance type (from tuple)
