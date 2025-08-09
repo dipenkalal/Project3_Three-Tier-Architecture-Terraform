@@ -10,7 +10,7 @@ resource "aws_db_instance" "mysql_db" {
   engine_version       = "8.0.41"                # MySQL version
 
   username             = "admin"                 # DB master username
-  password             = "90166Dipen"            # DB password (❗ Avoid hardcoding )
+  password             = "90166Dipen"            # DB password 
   db_name              = "mydb1"                 # Initial DB name
 
   multi_az             = var.mysql_config[2]     # Multi-AZ enabled or not (from tuple)

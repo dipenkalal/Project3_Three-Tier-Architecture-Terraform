@@ -11,13 +11,13 @@ resource "aws_s3_bucket" "app_code_bucket" {
 resource "aws_s3_object" "submit_form" {
   bucket = aws_s3_bucket.app_code_bucket.id
   key    = "submit-form.php"
-  source = "${path.module}/app-code/submit-form.php"
+  source = "./userdata/submit-form.php"
   content_type = "text/x-php"
 }
 
 resource "aws_s3_object" "get_employees" {
   bucket = aws_s3_bucket.app_code_bucket.id
   key    = "get-employees.php"
-  source = "${path.module}/app-code/get-employees.php"
+  source = "./userdata/get-employees.php"
   content_type = "text/x-php"
 }

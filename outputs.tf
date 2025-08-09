@@ -28,3 +28,8 @@ output "app_instance_private_ip" {
 output "rds_endpoint" {
   value = aws_db_instance.mysql_db.endpoint
 }
+
+output "iam_instance_profile" {
+  value = aws_iam_instance_profile.iam_s3.instance_profile_name
+}
+
