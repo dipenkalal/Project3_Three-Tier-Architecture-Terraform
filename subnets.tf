@@ -86,7 +86,7 @@ resource "aws_subnet" "pri_db_az_2" {
 # DB Subnet Group: Used to place RDS in private subnets
 #--------------------------------------------------
 resource "aws_db_subnet_group" "mysql_db_subnet_group" {
-  name       = "mysql-db-subnet-group"
+  name = "mysql-db-subnet-group"
   subnet_ids = [
     aws_subnet.pri_db_az_1.id,
     aws_subnet.pri_db_az_2.id

@@ -1,13 +1,18 @@
 #!/bin/bash
+set -xe
+exec > /var/log/user-data-web.log 2>&1
+
 yum update -y
-yum install -y httpd php php-mysqlnd aws-cli
-systemctl start httpd
-systemctl enable httpd
+yum install -y httpd
 
-# Fetch files from S3
-aws s3 cp s3://dipen-app-backend-code/submit-form.php /var/www/html/submit-form.php
-aws s3 cp s3://dipen-app-backend-code/get-employees.php /var/www/html/get-employees.php
+systemctl enable --now httpd
 
-
+# example placeholder homepage
+cat >/var/www/html/index.html <<'HTML'
+<!doctype html><html><body>
+<h1>Web Tier</h1>
+<p>This server will proxy to the internal ALB.</p>
+</body></html>
+HTML
 
 systemctl restart httpd

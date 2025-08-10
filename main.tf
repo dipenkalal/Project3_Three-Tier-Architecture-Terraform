@@ -22,12 +22,3 @@ terraform {
     }
   }
 }
-
-#--------------------------------------------
-# Provider Block: AWS
-#--------------------------------------------
-
-# This block configures the AWS provider to use the 'us-east-2' region by default.
-provider "aws" {
-  region = "us-east-2" # Ohio region
-}
