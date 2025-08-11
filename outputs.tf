@@ -41,3 +41,11 @@ output "internal_alb_dns_1" {
 #   value = aws_iam_instance_profile.instance_profile_name.name
 # }
 
+output "web_alb_dns_name" {
+  value = aws_lb.web_alb.dns_name
+  description = "Public DNS of the Web Tier ALB"
+}
+
+output "web_alb_dns" {
+  value = aws_lb.web_alb.dns_name
+}

@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "app_code_bucket" {
   bucket        = "dipen-app-backend-code"
-  force_destroy = true # optional: destroys all objects if bucket is deleted
+  force_destroy = true
 
   tags = {
     Name        = "app-code"
@@ -22,7 +22,6 @@ resource "aws_s3_object" "get_employees" {
   content_type = "text/x-php"
 }
 
-
 resource "aws_s3_object" "health_php" {
   bucket       = aws_s3_bucket.app_code_bucket.id
   key          = "health.php"
@@ -30,22 +29,34 @@ resource "aws_s3_object" "health_php" {
   content_type = "text/x-php"
 }
 
-
 resource "aws_s3_object" "config_php" {
   bucket       = aws_s3_bucket.app_code_bucket.id
   key          = "config.php"
   content_type = "text/x-php"
 
   content = templatefile("${path.module}/userdata/config.php.tmpl", {
-    db_host = aws_db_instance.mysql_db.address # <-- live endpoint
+    db_host = aws_db_instance.mysql_db.address
     db_name = aws_db_instance.mysql_db.db_name
     db_user = "admin"
-    db_pass = "90166Dipen" # (lab only; move to SSM later)
+    db_pass = "90166Dipen"
   })
-
-
 }
 
+resource "aws_s3_object" "form_html" {
+  bucket       = aws_s3_bucket.app_code_bucket.id
+  key          = "form.html"
+  source       = "./userdata/form.html"
+  content_type = "text/html"
+}
+
+resource "aws_s3_object" "view_employees_html" {
+  bucket       = aws_s3_bucket.app_code_bucket.id
+  key          = "view-employees.html"
+  source       = "./userdata/view-employees.html"
+  content_type = "text/html"
+}
+
+# SSM Parameters
 resource "aws_ssm_parameter" "rds_endpoint" {
   name      = "/app/db/endpoint"
   type      = "String"
@@ -63,6 +74,6 @@ resource "aws_ssm_parameter" "db_username" {
 resource "aws_ssm_parameter" "db_password" {
   name      = "/app/db/password"
   type      = "SecureString"
-  value     = "90166Dipen" # better: pass via tfvars or set manually
+  value     = "90166Dipen"
   overwrite = true
 }

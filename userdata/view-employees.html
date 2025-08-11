@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>View Employees</title>
+</head>
+<body>
+  <h1>Employee List</h1>
+  <button onclick="fetchEmployees()">Load Employees</button>
+  <ul id="employee-list"></ul>
+
+  <script>
+    function fetchEmployees() {
+      fetch('get-employees.php')
+        .then(response => response.json())
+        .then(data => {
+          const list = document.getElementById('employee-list');
+          list.innerHTML = '';
+          data.forEach(emp => {
+            const li = document.createElement('li');
+            li.textContent = `#${emp.id} - ${emp.name}`;
+            list.appendChild(li);
+          });
+        })
+        .catch(error => {
+          alert('Failed to load employee data.');
+          console.error(error);
+        });
+    }
+  </script>
+</body>
+</html>
