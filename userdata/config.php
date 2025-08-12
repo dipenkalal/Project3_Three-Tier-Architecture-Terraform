@@ -2,7 +2,7 @@
 function db_connect() {
     $servername = "${db_host}";
     $username = "${db_user}";
-    $password = "${db_pass}";  // Replace with actual password
+    $password = "90166Dipen";  // Replace with actual password
     $dbname = "${db_name}";
 
     $conn = new mysqli($servername, $username, $password, $dbname);

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Employee Records</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f7f9; margin:0; }
+    header { background:#0d6efd; color:#fff; padding:16px 20px; }
+    main { max-width:1000px; margin:24px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,.06); }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #e5e7eb; padding:10px; font-size:14px; }
+    th { background:#0d6efd; color:#fff; text-align:left; }
+    .nav a { color:#fff; margin-right:10px; text-decoration:none; }
+    .error { color:#c00; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="nav">
+      <a href="/index.html">🏠 Home</a>
+      <a href="/form.html">➕ Add Employee</a>
+      <a href="/health.php" style="float:right;color:#d1e7ff;">Health</a>
+    </div>
+  </header>
+  <main>
+    <h2>Employee Records</h2>
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Department</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="6">Loading…</td></tr>
+      </tbody>
+    </table>
+    <div id="err" class="error" style="display:none;"></div>
+  </main>
+
+  <script>
+    // Hits the web tier at /api/*; Apache reverse‑proxies to the internal ALB → app tier.
+    fetch('/api/get-employees.php', { headers: { 'Accept': 'application/json' }})
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(list => {
+        const body = document.getElementById('rows');
+        body.innerHTML = '';
+        if (!Array.isArray(list) || list.length === 0) {
+          body.innerHTML = '<tr><td colspan="6">No records yet.</td></tr>';
+          return;
+        }
+        for (const e of list) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${e.id ?? ''}</td>
+            <td>${e.name ?? ''}</td>
+            <td>${e.email ?? ''}</td>
+            <td>${e.role ?? ''}</td>
+            <td>${e.department ?? ''}</td>
+            <td>${e.created_at ?? ''}</td>`;
+          body.appendChild(tr);
+        }
+      })
+      .catch(err => {
+        document.getElementById('rows').innerHTML =
+          '<tr><td colspan="6">Error loading data.</td></tr>';
+        const el = document.getElementById('err');
+        el.style.display = 'block';
+        el.textContent = 'Fetch error: ' + err.message;
+      });
+  </script>
+</body>
+</html>

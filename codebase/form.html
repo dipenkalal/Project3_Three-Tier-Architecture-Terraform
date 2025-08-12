@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add Employee</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; }
+    .nav { margin-bottom: 16px; }
+    .nav a { margin-right: 10px; text-decoration: none; }
+    label { display: inline-block; width: 110px; }
+    input { margin: 6px 0; }
+    .msg { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="nav">
+    <a href="/index.html">🏠 Home</a>
+    <a href="/view-employees.html">📋 View Employees</a>
+  </div>
+
+  <h2>Add Employee</h2>
+
+  <!-- IMPORTANT: action points to /api/* -->
+  <form action="/api/submit-form.php" method="POST">
+    <div><label for="name">Name:</label>
+      <input type="text" id="name" name="name" required /></div>
+    <div><label for="email">Email:</label>
+      <input type="email" id="email" name="email" required /></div>
+    <div><label for="role">Role:</label>
+      <input type="text" id="role" name="role" required /></div>
+    <div><label for="department">Department:</label>
+      <input type="text" id="department" name="department" required /></div>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div class="msg">
+    <!-- The PHP response will render here after submit since it's a standard POST -->
+  </div>
+</body>
+</html>

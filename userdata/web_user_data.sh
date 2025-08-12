@@ -1,18 +1,29 @@
 #!/bin/bash
-set -xe
-exec > /var/log/user-data-web.log 2>&1
+set -eux
 sudo su
-sudo yum update -y
-sudo yum install -y httpd
-sudo systemctl start httpd
-sudo systemctl enable httpd
+dnf -y update
+dnf -y install httpd awscli
+systemctl enable --now httpd
 
-sudo systemctl enable --now httpd
+# STATIC ONLY (html/css/js/images)
+BUCKET="dipen-app-backend-code"
+# If you want, place only static files under a prefix (e.g., /static)
+aws s3 sync "s3://${BUCKET}/" /var/www/html/ --delete
 
-aws s3 cp s3://dpen-app-backend-code/index.html /var/www/html/index.html
-aws s3 cp s3://dipen-app-backend-code/form.html /var/www/html/form.html
-aws s3 cp s3://dipen-app-backend-code/view-employees.html /var/www/html/view-employees.html
-aws s3 cp s3://dpen-app-backend-code/health.php /var/www/html/health.php
+# Reverse proxy /api/* to the internal ALB
+INTERNAL_APP_ALB="${internal_alb_dns}"  # <- replace via Terraform templatefile or sed
 
-sudo chmod 644 /var/www/html/health.php
-sudo systemctl restart httpd
+cat >/etc/httpd/conf.d/reverse-proxy.conf <<CONF
+ProxyPreserveHost On
+ProxyRequests Off
+
+# required modules are in httpd; ensure they load
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+
+# forward all /api/* to the app tier
+ProxyPass        /api/ http://${INTERNAL_APP_ALB}/
+ProxyPassReverse /api/ http://${INTERNAL_APP_ALB}/
+CONF
+
+systemctl restart httpd

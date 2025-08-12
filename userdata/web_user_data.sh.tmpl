@@ -1,0 +1,27 @@
+#!/bin/bash
+set -eux
+sudo su
+dnf -y update
+dnf -y install httpd awscli
+systemctl enable --now httpd
+
+# Static site from S3
+aws s3 sync s3://dipen-app-backend-code /var/www/html --delete || true
+
+# inject from Terraform
+INTERNAL_APP_ALB_DNS="${internal_alb_dns}"
+
+cat >/etc/httpd/conf.d/reverse-proxy.conf <<CONF
+ProxyPreserveHost On
+ProxyRequests Off
+
+# (modules usually preloaded; harmless if duplicated)
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+
+# IMPORTANT: escape Terraform with $$
+ProxyPass        /api/ http://$${INTERNAL_APP_ALB_DNS}/
+ProxyPassReverse /api/ http://$${INTERNAL_APP_ALB_DNS}/
+CONF
+
+systemctl restart httpd

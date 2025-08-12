@@ -42,7 +42,7 @@ output "internal_alb_dns_1" {
 # }
 
 output "web_alb_dns_name" {
-  value = aws_lb.web_alb.dns_name
+  value       = aws_lb.web_alb.dns_name
   description = "Public DNS of the Web Tier ALB"
 }
 

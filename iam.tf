@@ -30,20 +30,19 @@ resource "aws_iam_policy" "ec2_s3_ssm_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = [
-          "s3:GetObject"
-        ],
-        Resource = "arn:aws:s3:::dipen-app-backend-code/*"
+        "Effect" : "Allow",
+        "Action" : ["s3:ListBucket"],
+        "Resource" : "arn:aws:s3:::dipen-app-backend-code"
       },
       {
-        Effect = "Allow",
-        Action = [
-          "ssm:GetParameter",
-          "ssm:GetParameters",
-          "ssm:GetParametersByPath"
-        ],
-        Resource = "*"
+        "Effect" : "Allow",
+        "Action" : ["s3:GetObject"],
+        "Resource" : "arn:aws:s3:::dipen-app-backend-code/*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"],
+        "Resource" : "*"
       }
     ]
   })

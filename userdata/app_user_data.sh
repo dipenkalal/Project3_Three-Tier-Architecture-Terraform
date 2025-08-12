@@ -1,41 +1,26 @@
 #!/bin/bash
-set -xe
-exec > /var/log/user-data-app.log 2>&1
-
+set -eux
 sudo su
-sudo yum update -y
-sudo yum install -y httpd php php-mysqlnd aws-cli jq
-sudo yum install -y httpd mariadb php php-mysqli
-sudo systemctl start httpd
-sudo systemctl enable httpd
-sudo systemctl enable --now httpd
+dnf -y update
+dnf -y install httpd php-fpm php-cli php-mysqlnd awscli
 
-S3_BUCKET="dipen-app-backend-code"
+systemctl enable --now php-fpm
+systemctl enable --now httpd
 
-aws s3 cp s3://dpen-app-backend-code/submit-form.php /var/www/html/submit-form.php
-aws s3 cp s3://dpen-app-backend-code/get-employees.php /var/www/html/get-employees.php
-aws s3 cp s3://dpen-app-backend-code/config.php /var/www/html/config.php
+# PHP-FPM handler for Apache
+cat >/etc/httpd/conf.d/php-fpm.conf <<'CONF'
+AddType application/x-httpd-php .php
+DirectoryIndex index.php index.html
+<FilesMatch \.php$>
+  SetHandler "proxy:unix:/run/php-fpm/www.sock|fcgi://localhost/"
+</FilesMatch>
+CONF
 
-REGION="${REGION:-us-east-2}"
-DB_HOST=$(aws ssm get-parameter --name "/app/db/endpoint"  --query Parameter.Value --output text --region $REGION)
-DB_USER=$(aws ssm get-parameter --name "/app/db/username"  --query Parameter.Value --output text --region $REGION)
-DB_PASS=$(aws ssm get-parameter --name "/app/db/password"  --with-decryption --query Parameter.Value --output text --region $REGION)
-DB_NAME="mydb1"
+# pull ONLY backend code (you can keep everything in same bucket)
+BUCKET="dipen-app-backend-code"
+aws s3 sync "s3://${BUCKET}/" /var/www/html/ --delete
 
-cat >/var/www/html/config.php <<PHP
-<?php
-\$db_host = "$DB_HOST";
-\$db_name = "$DB_NAME";
-\$db_user = "$DB_USER";
-\$db_pass = "$90166Dipen";
-function db_connect() {
-  global \$db_host, \$db_user, \$db_pass, \$db_name;
-  \$conn = new mysqli(\$db_host, \$db_user, \$db_pass, \$db_name);
-  if (\$conn->connect_error) { http_response_code(500); die("DB connect failed: " . \$conn->connect_error); }
-  return \$conn;
-}
-PHP
+chown -R apache:apache /var/www/html
+find /var/www/html -type f -exec chmod 0644 {} \;
 
-chown apache:apache /var/www/html/*.php || true
-chmod 0644 /var/www/html/*.php || true
-sudo systemctl restart httpd
+systemctl restart php-fpm httpd
