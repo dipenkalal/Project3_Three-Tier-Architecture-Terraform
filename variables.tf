@@ -10,7 +10,7 @@ variable "aws_region" {
   default     = "us-east-2"
 }
 
-# main.tf (or wherever your provider is)
+
 provider "aws" {
   region = var.aws_region
 }
