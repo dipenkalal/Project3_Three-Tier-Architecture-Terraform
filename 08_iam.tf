@@ -1,3 +1,4 @@
+### @IDX:IAM_EC2_ROLE 
 resource "aws_iam_role" "ec2_role" {
   name = "ec2-s3-ssm-role"
 
@@ -15,13 +16,13 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-
+### @IDX:IAM_S3_PROFILE 
 resource "aws_iam_instance_profile" "ec2_s3_profile" {
   name = "ec2-s3-ssm-instance-profile"
   role = aws_iam_role.ec2_role.name
 }
 
-
+### @IDX:IAM_S3_SSM_POLICY
 resource "aws_iam_policy" "ec2_s3_ssm_policy" {
   name        = "ec2-s3-ssm-policy"
   description = "Allow EC2 to access S3 and SSM"
@@ -48,6 +49,7 @@ resource "aws_iam_policy" "ec2_s3_ssm_policy" {
   })
 }
 
+### @IDX:IAM_SSM_ATTACHMENT
 resource "aws_iam_role_policy_attachment" "ec2_s3_ssm_attach" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.ec2_s3_ssm_policy.arn

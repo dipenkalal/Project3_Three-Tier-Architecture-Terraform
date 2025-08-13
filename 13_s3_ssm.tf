@@ -1,3 +1,4 @@
+### @IDX:S3_BUCKET_CREATION
 resource "aws_s3_bucket" "app_code_bucket" {
   bucket        = "dipen-app-backend-code"
   force_destroy = true
@@ -7,9 +8,10 @@ resource "aws_s3_bucket" "app_code_bucket" {
   }
 }
 
+### @IDX:LOCALS
 locals {
   app_code_dir = "${path.module}/codebase"
-  # Include everything except templates and the two generated PHP files
+  
   app_files = [
     for f in fileset(local.app_code_dir, "*") :
     f
@@ -25,6 +27,7 @@ locals {
   }
 }
 
+### @IDX:S3_FILES
 resource "aws_s3_object" "app_files" {
   for_each     = { for f in local.app_files : f => f }
   bucket       = aws_s3_bucket.app_code_bucket.id
@@ -34,7 +37,8 @@ resource "aws_s3_object" "app_files" {
   etag         = filemd5("${local.app_code_dir}/${each.value}")
 }
 
-# Rendered from templates (OWN these keys)
+# Rendered from templates 
+### @IDX:S3_FILE_SUBMIT_FORM
 resource "aws_s3_object" "submit_form" {
   bucket       = aws_s3_bucket.app_code_bucket.id
   key          = "submit-form.php"
@@ -47,6 +51,7 @@ resource "aws_s3_object" "submit_form" {
   })
 }
 
+### @IDX:S3_FILE_GET_EMPLOYEES
 resource "aws_s3_object" "get_employees" {
   bucket       = aws_s3_bucket.app_code_bucket.id
   key          = "get-employees.php"
@@ -59,12 +64,12 @@ resource "aws_s3_object" "get_employees" {
   })
 }
 
-
+### @IDX:S3_FILE_CONFIG
 resource "aws_s3_object" "config_php" {
   bucket       = aws_s3_bucket.app_code_bucket.id
   key          = "config.php"
   content_type = "text/x-php"
-  content = templatefile("${path.module}/userdata/config.php.tmpl", {
+  content = templatefile("${path.module}/codebase/config.php.tmpl", {
     db_host = aws_db_instance.mysql_db.address
     db_name = aws_db_instance.mysql_db.db_name
     db_user = "admin"
@@ -72,6 +77,7 @@ resource "aws_s3_object" "config_php" {
   })
 }
 
+### @IDX:SSM_PARAM_RDS_ENDPOINT
 resource "aws_ssm_parameter" "rds_endpoint" {
   name      = "/app/db/endpoint"
   type      = "String"
@@ -79,6 +85,7 @@ resource "aws_ssm_parameter" "rds_endpoint" {
   overwrite = true
 }
 
+### @IDX:SSM_PARAM_DB_USERNAME
 resource "aws_ssm_parameter" "db_username" {
   name      = "/app/db/username"
   type      = "String"
@@ -86,6 +93,7 @@ resource "aws_ssm_parameter" "db_username" {
   overwrite = true
 }
 
+### @IDX:SSM_PARAM_DB_PASSWORD
 resource "aws_ssm_parameter" "db_password" {
   name      = "/app/db/password"
   type      = "SecureString"

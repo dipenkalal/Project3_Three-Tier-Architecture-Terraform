@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euxo pipefail
+
+dnf -y update
+dnf -y install httpd awscli
+systemctl enable httpd
+systemctl start httpd
+
+# health endpoint so TG passes
+mkdir -p /var/www/html
+cat >/var/www/html/health.html <<'HTML'
+<!doctype html><title>OK</title>OK
+HTML
+
+# reverse proxy /api/* to the internal ALB
+cat >/etc/httpd/conf.d/reverse-proxy.conf <<CONF
+ProxyPreserveHost On
+ProxyRequests Off
+ProxyPass        /api/ http://${internal_alb_dns}/
+ProxyPassReverse /api/ http://${internal_alb_dns}/
+CONF
+
+apachectl -t
+systemctl reload httpd
+
+# static assets from S3 (retry)
+attempts=0
+until aws s3 sync "s3://${bucket_name}/" /var/www/html/ --delete; do
+  attempts=$((attempts+1))
+  [ "$attempts" -ge 3 ] && echo "S3 sync failed" >&2 && break
+  sleep 5
+done
+
+[ -f /var/www/html/index.html ] || ln -sf /var/www/html/health.html /var/www/html/index.html
+echo "userdata-web-ran: $(date -Is)" | tee /opt/userdata-web.marker

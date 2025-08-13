@@ -5,43 +5,131 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Employee Records</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f6f7f9; margin:0; }
-    header { background:#0d6efd; color:#fff; padding:16px 20px; }
-    main { max-width:1000px; margin:24px auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,.06); }
-    table { width:100%; border-collapse:collapse; }
-    th, td { border:1px solid #e5e7eb; padding:10px; font-size:14px; }
-    th { background:#0d6efd; color:#fff; text-align:left; }
-    .nav a { color:#fff; margin-right:10px; text-decoration:none; }
-    .error { color:#c00; margin-top:10px; }
+    /* Shared design tokens (aligned with form.html) */
+    :root{
+      --page-bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --card-border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+      --ring: #93c5fd;
+      --table-border: #e5e7eb;
+      --table-head-bg: #0d6efd; /* keep your project blue for headers */
+      --table-head-text: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--page-bg);
+      min-height: 100vh;
+      display: grid;
+      place-items: start center;
+      padding: 24px;
+    }
+
+    /* top breadcrumbs (like on form page) */
+    .nav {
+      position: fixed;
+      top: 14px;
+      left: 16px;
+      font-size: 14px;
+    }
+    .nav a {
+      text-decoration: none;
+      color: var(--muted);
+      margin-right: 12px;
+    }
+    .nav a:hover { text-decoration: underline; }
+
+    .card {
+      width: 100%;
+      max-width: 1000px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+      padding: 22px;
+      margin-top: 48px; /* leave room under fixed nav */
+    }
+
+    h2 {
+      margin: 0 0 14px 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border-radius: 8px;
+      border: 1px solid var(--table-border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+      background: #fff;
+    }
+
+    thead th {
+      background: var(--table-head-bg);
+      color: var(--table-head-text);
+      text-align: left;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 10px 12px;
+      border-right: 1px solid rgba(255,255,255,0.2);
+    }
+    thead th:last-child { border-right: 0; }
+
+    tbody td {
+      border-top: 1px solid var(--table-border);
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+
+    .error { color:#c00; margin-top:10px; font-size: 14px; }
+    .note { color: var(--muted); margin-top: 8px; font-size: 13px; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <a href="/index.html">🏠 Home</a>
-      <a href="/form.html">➕ Add Employee</a>
-      <a href="/health.php" style="float:right;color:#d1e7ff;">Health</a>
-    </div>
-  </header>
-  <main>
+  <div class="nav">
+    <a href="index.html">🏠 Home</a>
+    <a href="form.html">➕ Add Employee</a>
+    <a href="health.php" style="margin-left:12px;">💡 Health</a>
+  </div>
+
+  <div class="card">
     <h2>Employee Records</h2>
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Department</th>
-          <th>Created At</th>
-        </tr>
-      </thead>
-      <tbody id="rows">
-        <tr><td colspan="6">Loading…</td></tr>
-      </tbody>
-    </table>
+
+    <div class="table-wrap">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th style="width:72px;">Id</th>
+            <th style="min-width:160px;">Name</th>
+            <th style="min-width:200px;">Email</th>
+            <th style="min-width:140px;">Role</th>
+            <th style="min-width:160px;">Department</th>
+            <th style="min-width:180px;">Created At</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr><td colspan="6">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <div id="err" class="error" style="display:none;"></div>
-  </main>
+    <!-- Optional local-testing note -->
+    <div class="note">
+      <!-- This comment is just informational and won’t show on the server. -->
+      <!-- When opened from disk, calling /api/get-employees.php will fail. Test via your web tier (Apache/Nginx) or a local server. -->
+    </div>
+  </div>
 
   <script>
     // Hits the web tier at /api/*; Apache reverse‑proxies to the internal ALB → app tier.

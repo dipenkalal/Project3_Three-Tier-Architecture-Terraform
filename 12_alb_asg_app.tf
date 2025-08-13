@@ -1,10 +1,10 @@
-# Target group
+### @IDX:APP_TG
 resource "aws_lb_target_group" "app_tg" {
   name        = "app-tg"
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = aws_vpc.dipen_custom-vpc.id
+  vpc_id      = aws_vpc.dipen_custom_vpc.id
 
   health_check {
     path                = "/health.php"
@@ -19,6 +19,7 @@ resource "aws_lb_target_group" "app_tg" {
 }
 
 # Internal ALB across private app subnets
+### @IDX:APP_ALB
 resource "aws_lb" "app_internal_alb" {
   name                       = "app-internal-alb"
   internal                   = true
@@ -29,7 +30,7 @@ resource "aws_lb" "app_internal_alb" {
   tags                       = { Name = "app-internal-alb" }
 }
 
-# Listener
+### @IDX:APP_TG_LISTNER
 resource "aws_lb_listener" "app_http" {
   load_balancer_arn = aws_lb.app_internal_alb.arn
   port              = 80
@@ -40,22 +41,7 @@ resource "aws_lb_listener" "app_http" {
   }
 }
 
-output "internal_alb_dns" {
-  value       = aws_lb.app_internal_alb.dns_name
-  description = "DNS name of the internal ALB"
-}
-
-
-variable "app_ami" {
-  type    = string
-  default = "ami-08221e706f343d7b7"
-}
-
-variable "app_instance_type" {
-  type    = string
-  default = "t2.micro"
-}
-
+### @IDX:APP_LAUNCH_TEMPLATE
 resource "aws_launch_template" "app_lt" {
   name_prefix   = "app-lt-"
   image_id      = var.app_ami
@@ -68,14 +54,19 @@ resource "aws_launch_template" "app_lt" {
     name = aws_iam_instance_profile.ec2_s3_profile.name
   }
 
-  user_data = filebase64("${path.module}/userdata/app_user_data.sh")
+  user_data = filebase64("${path.module}/codebase/app_user_data.sh")
 
+  network_interfaces {
+    security_groups             = [aws_security_group.app_tier_sg.id]
+    associate_public_ip_address = false
+  }
   tag_specifications {
     resource_type = "instance"
     tags          = { Name = "app-tier-ec2" }
   }
 }
 
+### @IDX:APP_ASG
 resource "aws_autoscaling_group" "app_asg" {
   name                      = "app-asg"
   min_size                  = 1
@@ -83,7 +74,7 @@ resource "aws_autoscaling_group" "app_asg" {
   max_size                  = 4
   vpc_zone_identifier       = [aws_subnet.pri_app_az_1.id, aws_subnet.pri_app_az_2.id]
   health_check_type         = "ELB"
-  health_check_grace_period = 90
+  health_check_grace_period = 120
   target_group_arns         = [aws_lb_target_group.app_tg.arn]
 
   launch_template {
@@ -97,7 +88,6 @@ resource "aws_autoscaling_group" "app_asg" {
       min_healthy_percentage = 90
       instance_warmup        = 60
     }
-    triggers = ["launch_template"]
   }
   tag {
     key                 = "Name"

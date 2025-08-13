@@ -5,37 +5,150 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Add Employee</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 24px; }
-    .nav { margin-bottom: 16px; }
-    .nav a { margin-right: 10px; text-decoration: none; }
-    label { display: inline-block; width: 110px; }
-    input { margin: 6px 0; }
-    .msg { margin-top: 12px; }
+    /* Corrected variables for consistent colors */
+    :root{
+      --page-bg: var(--bg, #f3f4f6);
+      --card-bg: var(--card, #ffffff);
+      --card-border: var(--border, #e5e7eb);
+      --text: var(--text, #111827);
+      --muted: var(--muted, #6b7280);
+      --input-bg: var(--input, #ffffff);
+      --input-border: #e5e7eb;        /* fixed */
+      --primary: #22c55e;             /* fixed green */
+      --primary-hover: #16a34a;       /* darker green */
+      --ring: #93c5fd;                /* fixed */
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--page-bg);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    /* top nav */
+    .nav {
+      position: fixed;
+      top: 14px;
+      left: 16px;
+      font-size: 14px;
+    }
+    .nav a {
+      text-decoration: none;
+      color: var(--muted);
+      margin-right: 12px;
+    }
+    .nav a:hover { text-decoration: underline; }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+      padding: 22px;
+    }
+
+    .card h2 {
+      margin: 0 0 14px 0;
+      font-size: 18px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .field {
+      margin: 10px 0;
+    }
+    .field label {
+      display: none; /* visually hidden for style, still accessible */
+    }
+    .input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      font-size: 14px;
+      outline: none;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    .input:focus {
+      border-color: var(--ring);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 30%, transparent);
+    }
+
+    .actions {
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color .15s, transform .02s ease-in;
+    }
+    .btn:active { transform: translateY(1px); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .msg { margin-top: 10px; text-align: center; color: var(--muted); font-size: 14px; }
   </style>
 </head>
 <body>
   <div class="nav">
-    <a href="/index.html">🏠 Home</a>
-    <a href="/view-employees.html">📋 View Employees</a>
+    <!-- relative links so they work locally -->
+    <a href="index.html">🏠 Home</a>
+    <a href="view-employees.html">📋 View Employees</a>
   </div>
 
-  <h2>Add Employee</h2>
+  <div class="card" role="region" aria-labelledby="form-title">
+    <h2 id="form-title">Add Employee</h2>
 
-  <!-- IMPORTANT: action points to /api/* -->
-  <form action="/api/submit-form.php" method="POST">
-    <div><label for="name">Name:</label>
-      <input type="text" id="name" name="name" required /></div>
-    <div><label for="email">Email:</label>
-      <input type="email" id="email" name="email" required /></div>
-    <div><label for="role">Role:</label>
-      <input type="text" id="role" name="role" required /></div>
-    <div><label for="department">Department:</label>
-      <input type="text" id="department" name="department" required /></div>
-    <button type="submit">Submit</button>
-  </form>
+    <!-- IMPORTANT: still points to /api/* on server -->
+    <form action="/api/submit-form.php" method="POST" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input class="input" type="text" id="name" name="name" placeholder="Name" required />
+      </div>
 
-  <div class="msg">
-    <!-- The PHP response will render here after submit since it's a standard POST -->
+      <div class="field">
+        <label for="email">Email</label>
+        <input class="input" type="email" id="email" name="email" placeholder="Email" required />
+      </div>
+
+      <div class="field">
+        <label for="role">Role</label>
+        <input class="input" type="text" id="role" name="role" placeholder="Role" required />
+      </div>
+
+      <div class="field">
+        <label for="department">Department</label>
+        <input class="input" type="text" id="department" name="department" placeholder="Department" required />
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Submit</button>
+      </div>
+    </form>
+
+    <div class="msg"></div>
   </div>
 </body>
 </html>

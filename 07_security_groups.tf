@@ -1,13 +1,31 @@
-#--------------------------------------------------
-# Security Group for Web Tier
-#--------------------------------------------------
+### @IDX:SG_WEB_SERVER
 resource "aws_security_group" "web_tier_sg" {
-  vpc_id      = aws_vpc.dipen_custom-vpc.id
+  vpc_id      = aws_vpc.dipen_custom_vpc.id
   name        = "web_tier_sg"
   description = "Allow HTTP, HTTPS, and SSH inbound; allow all outbound traffic"
 
   tags = {
     Name = "web_tier_sg"
+  }
+}
+
+### @IDX:SG_WEB
+resource "aws_security_group" "web_sg" {
+  name   = "web-sg"
+  vpc_id = aws_vpc.dipen_custom_vpc.id
+
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.web_alb_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -23,7 +41,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_https_ipv4_web" {
 # Allow inbound HTTP traffic (port 80) from anywhere (public)
 resource "aws_vpc_security_group_ingress_rule" "allow_http_ipv4_web" {
   security_group_id = aws_security_group.web_tier_sg.id
-  cidr_ipv4         = "0.0.0.0/0" # Allow from public internet
+  cidr_ipv4         = "0.0.0.0/0" 
   from_port         = 80
   to_port           = 80
   ip_protocol       = "tcp"
@@ -32,7 +50,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_http_ipv4_web" {
 # Allow inbound SSH (port 22) from within the VPC or restrict to your IP
 resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4_web" {
   security_group_id = aws_security_group.web_tier_sg.id
-  cidr_ipv4         = "0.0.0.0/0" # WARNING: too open — change to specific IP for production
+  cidr_ipv4         = "0.0.0.0/0" 
   from_port         = 22
   to_port           = 22
   ip_protocol       = "tcp"
@@ -42,14 +60,12 @@ resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4_web" {
 resource "aws_vpc_security_group_egress_rule" "allow_all_web_traffic_ipv4" {
   security_group_id = aws_security_group.web_tier_sg.id
   cidr_ipv4         = "0.0.0.0/0"
-  ip_protocol       = "-1" # All protocols
+  ip_protocol       = "-1" 
 }
 
-#--------------------------------------------------
-# Security Group for App Tier
-#--------------------------------------------------
+### @IDX:SG_APP
 resource "aws_security_group" "app_tier_sg" {
-  vpc_id      = aws_vpc.dipen_custom-vpc.id
+  vpc_id      = aws_vpc.dipen_custom_vpc.id
   name        = "app_tier_sg"
   description = "Allow HTTP from web tier and all outbound traffic"
 
@@ -75,11 +91,9 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4_app" {
   ip_protocol       = "-1"
 }
 
-#--------------------------------------------------
-# Security Group for Database Tier
-#--------------------------------------------------
+### @IDX:SG_DB
 resource "aws_security_group" "db_tier_sg" {
-  vpc_id      = aws_vpc.dipen_custom-vpc.id
+  vpc_id      = aws_vpc.dipen_custom_vpc.id
   name        = "db_tier_sg"
   description = "Allow mysql from app tier and all outbound traffic"
 
@@ -96,18 +110,11 @@ resource "aws_vpc_security_group_ingress_rule" "allow_mysql_from_app_sg" {
   ip_protocol                  = "tcp"
 }
 
-# Allow all outbound traffic from App Tier
-# resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4_db" {
-#   security_group_id = aws_security_group.db_tier_sg.id
-#   cidr_ipv4         = "0.0.0.0/0"
-#   ip_protocol       = "-1"
-# }
-
-# ALB SG (only Web tier can hit it)
+### @IDX:SG_ALB_APP
 resource "aws_security_group" "alb_internal_sg" {
   name        = "alb-internal-sg"
   description = "Internal ALB SG"
-  vpc_id      = aws_vpc.dipen_custom-vpc.id
+  vpc_id      = aws_vpc.dipen_custom_vpc.id
   tags        = { Name = "alb-internal-sg" }
 }
 
@@ -136,46 +143,16 @@ resource "aws_vpc_security_group_ingress_rule" "app_http_from_alb" {
   to_port                      = 80
 }
 
-
-
-# resource "aws_vpc_security_group_ingress_rule" "db_from_app" {
-#   security_group_id            = aws_security_group.db_tier_sg.id
-#   referenced_security_group_id = aws_security_group.app_tier_sg.id
-#   ip_protocol                  = "tcp"
-#   from_port                    = 3306
-#   to_port                      = 3306
-# }
-
 resource "aws_vpc_security_group_egress_rule" "db_all_egress" {
   security_group_id = aws_security_group.db_tier_sg.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1"
 }
 
-# Web EC2 SG
-resource "aws_security_group" "web_sg" {
-  name   = "web-sg"
-  vpc_id = aws_vpc.dipen_custom-vpc.id
-
-  ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.web_alb_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-# ALB SG
+### @IDX:SG_ALB_WEB
 resource "aws_security_group" "web_alb_sg" {
   name   = "web-alb-sg"
-  vpc_id = aws_vpc.dipen_custom-vpc.id
+  vpc_id = aws_vpc.dipen_custom_vpc.id
 
   ingress {
     from_port   = 80
