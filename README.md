@@ -39,7 +39,7 @@ The three tiers:
 ---
 
 ## Architecture Diagram
-*(Insert diagram image here if available)*
+![AWS Three-Tier Architecture](Diagram/architecture.png)
 
 ---
 
